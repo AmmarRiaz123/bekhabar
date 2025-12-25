@@ -1,0 +1,152 @@
+# 1. High-Pace Left-Footed Outfielders
+PREFIX fifa: <http://example.org/fifa/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?player ?name ?pace ?dribbling 
+WHERE { 
+    ?player a fifa:OutfieldPlayer ; 
+            fifa:name ?name ; 
+            fifa:hasPreferredFoot fifa:LeftFoot ; 
+            fifa:hasSkill fifa:pace ; 
+            fifa:hasSkill fifa:dribbling . 
+            
+    fifa:pace fifa:skillValue ?pace . 
+    fifa:dribbling fifa:skillValue ?dribbling . 
+    
+    FILTER (?pace > 85 && ?dribbling > 85) 
+} 
+ORDER BY DESC(?pace)
+
+---
+
+# 2. Top Rated Players (Overall > 85)
+PREFIX fifa: <http://example.org/fifa/> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?player ?name ?rating
+WHERE {
+    ?player a fifa:Player ;
+            fifa:name ?name ;    
+            fifa:overallRating ?rating .
+    FILTER (?rating > 85)
+}
+ORDER BY DESC(?rating)
+
+---
+
+# 3. Clubs with Diverse Nationalities (More than 5)
+PREFIX fifa: <http://example.org/fifa/> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?club (COUNT(DISTINCT ?country) AS ?nationalityCount)
+WHERE {
+    ?player fifa:playsFor ?club ;
+            fifa:representsNation ?country .
+}
+GROUP BY ?club
+HAVING (COUNT(DISTINCT ?country) > 5)
+ORDER BY DESC(?nationalityCount)
+
+---
+
+# 4. Versatile Players with Elite Skills (Multiple Positions & Skill >= 85)
+PREFIX fifa: <http://example.org/fifa/> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?player ?name (COUNT(DISTINCT ?pos) AS ?positionCount) 
+WHERE {
+    ?player a fifa:Player ;
+            fifa:name ?name ;
+            fifa:hasPosition ?pos ;
+            fifa:hasSkill ?skill .
+    
+    ?skill fifa:skillValue ?value .
+    
+    FILTER (?value >= 85)
+}
+GROUP BY ?player ?name
+HAVING (COUNT(DISTINCT ?pos) > 1)
+ORDER BY DESC(?positionCount)
+
+---
+
+# 5. Elite Performance Clubs (Average Rating > 80)
+PREFIX fifa: <http://example.org/fifa/> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?club (AVG(?rating) AS ?avgRating) 
+WHERE {
+    ?player fifa:playsFor ?club ;
+            fifa:overallRating ?rating .
+}
+GROUP BY ?club
+HAVING (AVG(?rating) > 80)
+ORDER BY DESC(?avgRating)
+
+---
+
+# 6. Expatriate Players (Club and Country Name Mismatch)
+PREFIX fifa: <http://example.org/fifa/>
+
+SELECT ?player ?name ?club ?country 
+WHERE {
+    ?player a fifa:Player ;
+            fifa:name ?name ;
+            fifa:playsFor ?club ;
+            fifa:representsNation ?country .
+
+    FILTER (!STRENDS(STR(?club), STR(?country)))
+}
+
+---
+
+# 7. Top Tier Goalkeeper Reflexes
+PREFIX fifa: <http://example.org/fifa/>
+
+SELECT ?player ?name ?reflexes
+WHERE {
+    ?player a fifa:Goalkeeper ;
+            fifa:name ?name ;
+            fifa:hasSkill ?reflexSkill .
+            
+    ?reflexSkill a fifa:Skill ;
+                 fifa:skillValue ?reflexes .
+                 
+    FILTER(CONTAINS(STR(?reflexSkill), "goalkeeping_reflexes"))
+    FILTER(?reflexes > 85)
+}
+ORDER BY DESC(?reflexes)
+
+---
+
+# 8. Expiring Contracts (End of 2025 or earlier)
+PREFIX fifa: <http://example.org/fifa/> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?player ?name ?contractYear
+WHERE {
+    ?player fifa:name ?name ;
+            fifa:contractUntil ?contractYear .
+            
+    FILTER(xsd:integer(STR(?contractYear)) <= 2025)
+}
+ORDER BY ?contractYear
+
+---
+
+# 9. Club Counts for High-Reputation Players (Reputation >= 4)
+PREFIX fifa: <http://example.org/fifa/> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?club (COUNT(?player) AS ?playerCount)
+WHERE {
+    ?player fifa:hasSkill ?repSkill ;
+            fifa:playsFor ?club .
+            
+    ?repSkill a fifa:Skill ;
+              fifa:skillValue ?repValue .
+              
+    FILTER(?repValue >= 4)
+}
+GROUP BY ?club
+ORDER BY DESC(?playerCount)

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Linked Data Explorer</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+</head>
+<body>
+  <header>
+    <h1>Linked Data Explorer</h1>
+    <div id="search">
+      <input id="searchInput" type="search" placeholder="Search entities by label…" autocomplete="off" />
+      <ul id="searchResults"></ul>
+    </div>
+  </header>
+
+  <main>
+    <section id="details">
+      <h2 id="entityLabel">Select an entity</h2>
+      <p id="entityComment"></p>
+      <div id="entityTypes"></div>
+      <div class="relations">
+        <h3>Outgoing</h3>
+        <ul id="outgoingList"></ul>
+      </div>
+      <div class="relations">
+        <h3>Incoming</h3>
+        <ul id="incomingList"></ul>
+      </div>
+    </section>
+
+    <section id="graph">
+      <h2>Graph</h2>
+      <svg id="graphSvg" width="640" height="480"></svg>
+    </section>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
